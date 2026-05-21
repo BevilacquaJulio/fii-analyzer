@@ -2,7 +2,7 @@
 
 API simples em Node.js + Express + MySQL para salvar o histórico de análises.
 
-## Estrutura (MVC)
+## Estrutura (camadas)
 
 ```
 backend/
@@ -14,12 +14,18 @@ backend/
     ├── config/
     │   └── database.js       → conexão com MySQL
     ├── models/
-    │   └── AnaliseModel.js   → consultas no banco
+    │   └── Analise.js        → entidade e constantes
+    ├── repositories/
+    │   └── AnaliseRepository.js → consultas SQL (CRUD)
+    ├── services/
+    │   └── AnaliseService.js → regras de negócio e validação
     ├── controllers/
-    │   └── AnaliseController.js → regras da API
+    │   └── AnaliseController.js → HTTP (request/response)
     └── routes/
-        └── analiseRoutes.js  → rotas HTTP
+        └── analiseRoutes.js  → rotas da API
 ```
+
+**Fluxo:** `Route → Controller → Service → Repository → MySQL`
 
 ## 1. Criar o banco de dados
 

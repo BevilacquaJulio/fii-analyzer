@@ -1,6 +1,6 @@
 const db = require('../config/database');
 
-const AnaliseModel = {
+const AnaliseRepository = {
   async criar(analise) {
     const sql = `
       INSERT INTO analises (ticker, tipo, status, aprovados, total, dados, resultado)
@@ -51,4 +51,4 @@ const AnaliseModel = {
   }
 };
 
-module.exports = AnaliseModel;
+module.exports = AnaliseRepository;
