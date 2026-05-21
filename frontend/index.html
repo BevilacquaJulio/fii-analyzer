@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analisador de FII — Fii Analyser</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/icons.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+</head>
+<body class="app">
+  <aside class="sidebar" aria-label="Menu principal">
+    <a href="index.html" class="sidebar__brand">
+      <img src="logo.png" alt="Fii Analyser" class="sidebar__logo" width="260" height="96">
+    </a>
+
+    <nav class="sidebar__nav">
+      <span class="sidebar__indicator" aria-hidden="true"></span>
+      <a href="index.html" class="sidebar__link sidebar__link--active" data-page="analise" aria-current="page">
+        <span class="sidebar__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16l4-8 4 5 5-9"/></svg>
+        </span>
+        Análise
+      </a>
+      <a href="simulador.html" class="sidebar__link" data-page="simulador">
+        <span class="sidebar__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg>
+        </span>
+        Simulador
+      </a>
+    </nav>
+  </aside>
+
+  <div class="app-content">
+    <header class="page-header">
+      <h1 class="page-title">Analisador de FII</h1>
+      <p class="page-subtitle">Avalie se um fundo atende aos critérios de investimento</p>
+    </header>
+
+    <main class="main">
+      <div class="card">
+        <p class="section-title">Tipo do FII</p>
+        <div class="toggle-group" role="group" aria-label="Tipo do FII">
+          <button type="button" class="toggle-btn toggle-active" data-type="papel">
+            <span class="toggle-btn__label">FII de Papel</span>
+            <span class="toggle-btn__balloon" aria-hidden="true">
+              <svg class="toggle-btn__balloon-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.02 2 11.25c0 1.57.45 3.04 1.24 4.3L2 22l6.82-1.78A9.96 9.96 0 0 0 12 20.5c5.52 0 10-4.02 10-9.25S17.52 2 12 2zm0 15.5a8.2 8.2 0 0 1-4.07-1.09l-.29-.17-3.04.79.81-2.96-.19-.3A7.7 7.7 0 0 1 4 11.25C4 7.02 7.58 3.5 12 3.5s8 3.52 8 7.75-3.58 7.25-8 7.25z"/><circle cx="8.5" cy="11" r="1.1"/><circle cx="12" cy="11" r="1.1"/><circle cx="15.5" cy="11" r="1.1"/></svg>
+            </span>
+          </button>
+          <button type="button" class="toggle-btn toggle-inactive" data-type="tijolo">
+            <span class="toggle-btn__label">FII de Tijolo</span>
+            <span class="toggle-btn__balloon" aria-hidden="true">
+              <svg class="toggle-btn__balloon-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.02 2 11.25c0 1.57.45 3.04 1.24 4.3L2 22l6.82-1.78A9.96 9.96 0 0 0 12 20.5c5.52 0 10-4.02 10-9.25S17.52 2 12 2zm0 15.5a8.2 8.2 0 0 1-4.07-1.09l-.29-.17-3.04.79.81-2.96-.19-.3A7.7 7.7 0 0 1 4 11.25C4 7.02 7.58 3.5 12 3.5s8 3.52 8 7.75-3.58 7.25-8 7.25z"/><circle cx="8.5" cy="11" r="1.1"/><circle cx="12" cy="11" r="1.1"/><circle cx="15.5" cy="11" r="1.1"/></svg>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <form id="analyser-form" class="card" novalidate>
+        <p class="section-title">Dados do Fundo</p>
+        <div class="form-grid form-grid--3">
+          <div class="field">
+            <label class="label" for="ticker">Ticker</label>
+            <input class="input" type="text" id="ticker" name="ticker" placeholder="HGLG11" autocomplete="off">
+          </div>
+          <div class="field">
+            <label class="label" for="patrimonio-liquido">Patrimônio Líquido (R$)</label>
+            <div class="input-combo">
+              <input class="input-combo__input" type="number" id="patrimonio-liquido" name="patrimonioLiquido" placeholder="1,2" min="0" step="any">
+              <div class="scale-dropdown">
+                <input type="hidden" class="scale-dropdown__value" id="patrimonio-liquido-scale" value="bilhoes">
+                <button type="button" class="scale-dropdown__trigger" aria-label="Escala patrimônio líquido" aria-haspopup="listbox" aria-expanded="false">
+                  <span class="scale-dropdown__label">Bilhões</span>
+                  <svg class="scale-dropdown__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <ul class="scale-dropdown__menu" role="listbox" aria-label="Escala patrimônio líquido">
+                  <li class="scale-dropdown__option" role="option" data-value="milhoes" aria-selected="false">Milhões</li>
+                  <li class="scale-dropdown__option is-selected" role="option" data-value="bilhoes" aria-selected="true">Bilhões</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" for="liquidez">Liquidez Diária (R$)</label>
+            <div class="input-combo">
+              <input class="input-combo__input" type="number" id="liquidez" name="liquidez" placeholder="2,5" min="0" step="any">
+              <div class="scale-dropdown">
+                <input type="hidden" class="scale-dropdown__value" id="liquidez-scale" value="milhoes">
+                <button type="button" class="scale-dropdown__trigger" aria-label="Escala liquidez diária" aria-haspopup="listbox" aria-expanded="false">
+                  <span class="scale-dropdown__label">Milhões</span>
+                  <svg class="scale-dropdown__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <ul class="scale-dropdown__menu" role="listbox" aria-label="Escala liquidez diária">
+                  <li class="scale-dropdown__option is-selected" role="option" data-value="milhoes" aria-selected="true">Milhões</li>
+                  <li class="scale-dropdown__option" role="option" data-value="bilhoes" aria-selected="false">Bilhões</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" for="pvp">P/VP</label>
+            <input class="input" type="number" id="pvp" name="pvp" placeholder="0.95" min="0" step="any">
+          </div>
+          <div class="field">
+            <label class="label" for="dy">Dividend Yield anual (%)</label>
+            <input class="input" type="number" id="dy" name="dy" placeholder="11.5" min="0" step="any">
+          </div>
+          <div class="field">
+            <label class="label" for="valor-cota">Valor da Cota (R$)</label>
+            <input class="input" type="number" id="valor-cota" name="valorCota" placeholder="105.50" min="0" step="any">
+          </div>
+          <div class="field">
+            <label class="label" for="historico-trigger">Data de constituição</label>
+            <input type="hidden" id="historico-ano">
+            <input type="hidden" id="historico-mes">
+            <input type="hidden" id="historico-dia">
+            <button type="button" class="input input--picker" id="historico-trigger" aria-haspopup="dialog" aria-controls="historico-date-modal">
+              <span class="input--picker__text" id="historico-display">Selecionar ano, mês e dia</span>
+              <svg class="input--picker__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </button>
+          </div>
+          <div class="field field--imoveis field--hidden" id="field-imoveis">
+            <label class="label" for="imoveis">Número de imóveis</label>
+            <input class="input" type="number" id="imoveis" name="imoveis" placeholder="12" min="0" step="1">
+          </div>
+
+          <div class="field field--pl-max" id="field-pl-max">
+            <label class="label" for="pl-max">% PL Máximo (%)</label>
+            <input class="input" type="number" id="pl-max" name="plMax" placeholder="6" min="0" step="any">
+          </div>
+          <div class="field field--vacancia field--hidden" id="field-vacancia">
+            <label class="label" for="vacancia">Vacância (%)</label>
+            <input class="input" type="number" id="vacancia" name="vacancia" placeholder="5" min="0" step="any">
+          </div>
+        </div>
+
+        <div class="separator"></div>
+        <p class="section-title">Critérios Qualitativos</p>
+        <div class="form-grid form-grid--2">
+          <div class="field">
+            <span class="label">Histórico de dividendos</span>
+            <div class="yes-no-group" role="group" aria-label="Histórico de dividendos">
+              <button type="button" class="yes-no-btn" data-field="dividendos" data-value="estavel">Estável</button>
+              <button type="button" class="yes-no-btn" data-field="dividendos" data-value="crescente">Crescente</button>
+            </div>
+          </div>
+          <div class="field">
+            <span class="label">Possui 100 mil cotistas ou mais?</span>
+            <div class="yes-no-group" role="group" aria-label="Cotistas">
+              <button type="button" class="yes-no-btn" data-field="cotistas" data-value="sim">Sim</button>
+              <button type="button" class="yes-no-btn" data-field="cotistas" data-value="nao">Não</button>
+            </div>
+          </div>
+        </div>
+
+        <p id="analyser-error" class="form-error" hidden></p>
+
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Analisar FII</button>
+          <div class="save-historico-wrap save-historico-wrap--dimmed" id="save-historico-wrap">
+            <span class="save-historico-tip" id="save-historico-tip" role="tooltip">
+              Preencha todos os campos para salvar no histórico
+            </span>
+            <button type="button" class="btn btn-save-historico btn-save-historico--dimmed" id="btn-salvar-analise" disabled aria-disabled="true">
+              Salvar no histórico
+            </button>
+          </div>
+          <p id="analyser-save-feedback" class="save-feedback" hidden></p>
+        </div>
+      </form>
+
+      <div id="analyser-result" class="resultado" hidden></div>
+    </main>
+  </div>
+
+  <div class="date-modal" id="historico-date-modal" hidden aria-hidden="true">
+    <div class="date-modal__backdrop" data-close-historico-modal></div>
+    <div class="date-modal__panel" role="dialog" aria-labelledby="historico-date-title" aria-modal="true">
+      <button type="button" class="date-modal__close" aria-label="Fechar" data-close-historico-modal>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <header class="date-modal__header">
+        <h2 class="date-modal__title" id="historico-date-title">Data de constituição</h2>
+        <p class="date-modal__subtitle">Informe quando o fundo foi constituído</p>
+        <ol class="date-modal__steps" aria-label="Etapas">
+          <li class="date-modal__step is-active" data-step="0">Ano</li>
+          <li class="date-modal__step" data-step="1">Mês</li>
+          <li class="date-modal__step" data-step="2">Dia</li>
+        </ol>
+      </header>
+      <div class="date-modal__body" id="historico-date-body"></div>
+      <p class="date-modal__error" id="historico-date-error" hidden></p>
+      <footer class="date-modal__footer">
+        <button type="button" class="btn btn-secondary" id="historico-date-back" hidden>Voltar</button>
+        <button type="button" class="btn btn-primary" id="historico-date-next">Próximo</button>
+      </footer>
+    </div>
+  </div>
+
+  <div class="checklist-modal" id="checklist-modal" hidden aria-hidden="true">
+    <div class="checklist-modal__backdrop" data-close-modal></div>
+    <div class="checklist-modal__panel" role="dialog" aria-labelledby="checklist-modal-title" aria-modal="true">
+      <button type="button" class="checklist-modal__close" aria-label="Fechar checklist" data-close-modal>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div id="checklist-modal-content"></div>
+    </div>
+  </div>
+
+  <script src="js/icons.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/historico-date.js"></script>
+  <script src="js/scale-dropdown.js"></script>
+  <script src="js/analyser.js"></script>
+  <script src="js/simulator.js"></script>
+  <script src="js/analyser-page.js"></script>
+  <script src="js/simulator-page.js"></script>
+  <script src="js/page-init.js"></script>
+  <script src="js/sidebar.js"></script>
+</body>
+</html>

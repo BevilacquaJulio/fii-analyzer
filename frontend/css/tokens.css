@@ -1,0 +1,85 @@
+:root {
+  /* Backgrounds */
+  --bg-void:      #000000;
+  --bg-base:      #0a0a0a;
+  --bg-surface:   #111111;
+  --bg-raised:    #161616;
+  --bg-hover:     #1a1a1a;
+  --bg-subtle:    #222222;
+
+  /* Accent — White Neon */
+  --neon:         #FFFFFF;
+  --neon-light:   #FFFFFF;
+  --neon-bright:  #F5F5F5;
+  --neon-dim:     #FFFFFF66;
+  --neon-ghost:   #FFFFFF22;
+  --neon-muted:   #AAAAAA;
+
+  /* Semantic */
+  --success:      #FFFFFF;
+  --success-bg:   #0a120e;
+  --success-green:      #4ADE80;
+  --success-green-dim:  #4ADE8044;
+  --success-green-muted:#86EF9944;
+  --success-green-border: rgba(74, 222, 128, 0.28);
+  --success-green-glow: rgba(74, 222, 128, 0.12);
+  --danger:       #FF3B3B;
+  --danger-bg:    #1a0000;
+  --warning:      #FFAA00;
+  --warning-bg:   #1a1000;
+  --info:         #3B9EFF;
+  --info-bg:      #001220;
+
+  /* Text on accent surfaces (botões brancos) */
+  --text-on-accent: #0a0a0a;
+
+  /* Text */
+  --text-primary:   #E8E8E8;
+  --text-secondary: #888888;
+  --text-muted:     #555555;
+  --text-ghost:     #333333;
+
+  /* Borders */
+  --border-base:    #1f1f1f;
+  --border-subtle:  #141414;
+  --border-hover:   #2a2a2a;
+  --border-accent:  #FFFFFF;
+
+  /* Glow */
+  --glow-neon:    0 0 10px #FFFFFF55, 0 0 28px #FFFFFF33, 0 0 48px #FFFFFF18;
+  --glow-subtle:  0 0 14px #FFFFFF44;
+  --glow-success: 0 0 10px rgba(74, 222, 128, 0.18), 0 0 24px rgba(74, 222, 128, 0.08);
+  --glow-danger:  0 0 8px #FF3B3B66, 0 0 20px #FF3B3B22;
+  --glow-warn:    0 0 8px #FFAA0066, 0 0 20px #FFAA0022;
+
+  /* Typography scale */
+  --type-display:    2rem;
+  --type-title:      1.625rem;
+  --type-heading:    1.125rem;
+  --type-subheading: 1rem;
+  --type-body:       0.9375rem;
+  --type-caption:    0.8125rem;
+  --type-label:      0.8125rem;
+
+  /* Spacing */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+
+  /* Transitions */
+  --t-fast: all 0.15s ease;
+  --t-base: all 0.25s ease;
+  --t-slow: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}

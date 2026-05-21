@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Lucros — Fii Analyser</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/icons.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+</head>
+<body class="app">
+  <aside class="sidebar" aria-label="Menu principal">
+    <a href="index.html" class="sidebar__brand">
+      <img src="logo.png" alt="Fii Analyser" class="sidebar__logo" width="260" height="96">
+    </a>
+
+    <nav class="sidebar__nav">
+      <span class="sidebar__indicator" aria-hidden="true"></span>
+      <a href="index.html" class="sidebar__link" data-page="analise">
+        <span class="sidebar__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16l4-8 4 5 5-9"/></svg>
+        </span>
+        Análise
+      </a>
+      <a href="simulador.html" class="sidebar__link sidebar__link--active" data-page="simulador" aria-current="page">
+        <span class="sidebar__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg>
+        </span>
+        Simulador
+      </a>
+    </nav>
+  </aside>
+
+  <div class="app-content">
+    <header class="page-header">
+      <h1 class="page-title">Simulador de Lucros</h1>
+      <p class="page-subtitle">Simule reinvestimento de dividendos mês a mês</p>
+    </header>
+
+    <main class="main">
+      <form id="simulator-form" class="card" novalidate>
+        <p class="section-title">Configuração Inicial</p>
+        <div class="form-grid form-grid--2">
+          <div class="field">
+            <label class="label" for="cotas-iniciais">Cotas iniciais</label>
+            <input class="input" type="number" id="cotas-iniciais" name="cotasIniciais" placeholder="1144" min="0" step="1">
+          </div>
+          <div class="field">
+            <label class="label" for="sim-valor-cota">Valor da cota (R$)</label>
+            <input class="input" type="number" id="sim-valor-cota" name="valorCota" placeholder="100.00" min="0" step="any">
+          </div>
+          <div class="field">
+            <label class="label" for="dividendo-cota">Dividendo mensal por cota (R$)</label>
+            <input class="input" type="number" id="dividendo-cota" name="dividendoCota" placeholder="0.10" min="0" step="any">
+          </div>
+          <div class="field">
+            <label class="label" for="novas-cotas">Novas cotas por mês</label>
+            <input class="input" type="number" id="novas-cotas" name="novasCotas" placeholder="12" min="0" step="1">
+          </div>
+          <div class="field">
+            <label class="label" for="valor-gasto-cota">Valor gasto por cota nova (R$)</label>
+            <input class="input" type="number" id="valor-gasto-cota" name="valorGastoCota" placeholder="112.80" min="0" step="any">
+          </div>
+          <div class="field">
+            <label class="label" for="num-meses">Número de meses</label>
+            <input class="input" type="number" id="num-meses" name="numMeses" placeholder="12" min="1" step="1">
+          </div>
+          <div class="field">
+            <label class="label" for="caixa-inicial">Caixa inicial (R$)</label>
+            <input class="input" type="number" id="caixa-inicial" name="caixaInicial" placeholder="0.00" min="0" step="any" value="0">
+          </div>
+        </div>
+
+        <p id="simulator-error" class="form-error" hidden></p>
+
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Simular</button>
+          <button type="button" id="btn-clear" class="btn btn-secondary">Limpar</button>
+          <button type="button" id="btn-export" class="btn btn-secondary" disabled>Exportar CSV</button>
+        </div>
+      </form>
+
+      <div id="simulator-output" hidden>
+        <div class="table-wrapper">
+          <table id="simulator-table" class="data-table">
+            <thead>
+              <tr>
+                <th>Mês</th>
+                <th>Cotas Início</th>
+                <th>Dividendo (R$)</th>
+                <th>Caixa Anterior (R$)</th>
+                <th>Total Disponível (R$)</th>
+                <th>Novas Cotas</th>
+                <th>Valor Gasto (R$)</th>
+                <th>Caixa p/ Próx. Mês (R$)</th>
+                <th>Cotas Final</th>
+                <th>Div. Mensal Final (R$)</th>
+                <th>Valor Total (R$)</th>
+                <th>Valor Total Real (R$)</th>
+                <th>Dividendo Real (R$)</th>
+              </tr>
+            </thead>
+            <tbody id="simulator-tbody"></tbody>
+          </table>
+        </div>
+
+        <div id="simulator-summary" class="summary-grid"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/icons.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/analyser.js"></script>
+  <script src="js/simulator.js"></script>
+  <script src="js/analyser-page.js"></script>
+  <script src="js/simulator-page.js"></script>
+  <script src="js/page-init.js"></script>
+  <script src="js/sidebar.js"></script>
+</body>
+</html>
