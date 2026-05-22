@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histórico de Análises — Fii Analyser</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/icons.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+</head>
+<body class="app">
+  <aside class="sidebar" aria-label="Menu principal">
+    <a href="index.html" class="sidebar__brand">
+      <img src="logo.png" alt="Fii Analyser" class="sidebar__logo" width="260" height="96">
+    </a>
+
+    <nav class="sidebar__nav">
+      <span class="sidebar__indicator" aria-hidden="true"></span>
+      <a href="index.html" class="sidebar__link" data-page="analise">
+        <span class="sidebar__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16l4-8 4 5 5-9"/></svg>
+        </span>
+        Análise
+      </a>
+      <a href="simulador.html" class="sidebar__link" data-page="simulador">
+        <span class="sidebar__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg>
+        </span>
+        Simulador
+      </a>
+      <a href="historico.html" class="sidebar__link sidebar__link--active" data-page="historico" aria-current="page">
+        <span class="sidebar__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </span>
+        Histórico
+      </a>
+    </nav>
+  </aside>
+
+  <div class="app-content">
+    <header class="page-header page-header--hist">
+      <div class="page-header__row">
+        <div>
+          <h1 class="page-title">Histórico de Análises</h1>
+          <p class="page-subtitle">Todas as avaliações salvas no sistema</p>
+        </div>
+        <button type="button" class="btn btn-secondary hist-refresh" id="hist-refresh" aria-label="Atualizar histórico">
+          <span class="hist-refresh__visual" aria-hidden="true">
+            <svg class="hist-refresh__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <span class="hist-refresh__spinner"></span>
+          </span>
+          Atualizar
+        </button>
+      </div>
+    </header>
+
+    <main class="main main--hist">
+      <div class="hist-stats" id="hist-stats" hidden>
+        <article class="hist-stat">
+          <span class="hist-stat__value" data-stat="total">0</span>
+          <span class="hist-stat__label">Total</span>
+        </article>
+        <article class="hist-stat hist-stat--approved">
+          <span class="hist-stat__value" data-stat="approved">0</span>
+          <span class="hist-stat__label">Aprovados</span>
+        </article>
+        <article class="hist-stat hist-stat--rejected">
+          <span class="hist-stat__value" data-stat="rejected">0</span>
+          <span class="hist-stat__label">Reprovados</span>
+        </article>
+        <article class="hist-stat hist-stat--warning">
+          <span class="hist-stat__value" data-stat="warning">0</span>
+          <span class="hist-stat__label">Atenção</span>
+        </article>
+      </div>
+
+      <div class="hist-toolbar" id="hist-content" hidden>
+        <div class="hist-filters" role="tablist" aria-label="Filtrar por status">
+          <button type="button" class="hist-filter hist-filter--active" data-filter="all" role="tab" aria-selected="true">Todos</button>
+          <button type="button" class="hist-filter" data-filter="approved" role="tab" aria-selected="false">Aprovados</button>
+          <button type="button" class="hist-filter" data-filter="rejected" role="tab" aria-selected="false">Reprovados</button>
+          <button type="button" class="hist-filter" data-filter="warning" role="tab" aria-selected="false">Atenção</button>
+        </div>
+      </div>
+
+      <div class="hist-loading" id="hist-loading">
+        <span class="hist-loading__spinner" aria-hidden="true"></span>
+        <p class="hist-loading__text">Carregando histórico...</p>
+      </div>
+
+      <div class="hist-empty" id="hist-empty" hidden>
+        <div class="hist-empty__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h2 class="hist-empty__title">Nenhuma análise salva</h2>
+        <p class="hist-empty__text">Faça uma análise e clique em <strong>Salvar no histórico</strong> para vê-la aqui.</p>
+        <a href="index.html" class="btn btn-primary">Ir para Análise</a>
+      </div>
+
+      <div class="hist-error card" id="hist-error" hidden>
+        <p class="hist-error__title">Não foi possível carregar</p>
+        <p class="hist-error__msg" id="hist-error-msg"></p>
+        <button type="button" class="btn btn-secondary" onclick="HistoricoPage.load()">Tentar novamente</button>
+      </div>
+
+      <div class="hist-grid" id="hist-list" aria-live="polite"></div>
+    </main>
+  </div>
+
+  <div class="hist-detail-modal" id="hist-detail-modal" hidden aria-hidden="true" data-page-overlay="historico">
+    <div class="hist-detail-modal__backdrop" data-close-hist-modal></div>
+    <div class="hist-detail-modal__panel" role="dialog" aria-labelledby="hist-detail-title" aria-modal="true">
+      <button type="button" class="hist-detail-modal__close" aria-label="Fechar" data-close-hist-modal>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <h2 class="hist-detail-modal__title" id="hist-detail-title">Detalhes da análise</h2>
+      <div class="hist-detail-modal__body" id="hist-detail-body"></div>
+    </div>
+  </div>
+
+  <script src="js/icons.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/historico-page.js"></script>
+  <script src="js/page-init.js"></script>
+  <script src="js/sidebar.js"></script>
+</body>
+</html>

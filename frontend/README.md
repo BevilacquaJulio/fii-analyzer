@@ -8,6 +8,7 @@ Interface estática em HTML, CSS e JavaScript puro.
 frontend/
 ├── index.html        → Analisador de FII
 ├── simulador.html    → Simulador de lucros
+├── historico.html    → Histórico de análises salvas
 ├── logo.png
 ├── css/              → Estilos
 ├── js/               → Lógica da aplicação

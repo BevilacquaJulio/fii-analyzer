@@ -29,5 +29,9 @@ const Icons = {
 
   alertCircle(sizeClass = 'icon--badge') {
     return this._svg('<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>', sizeClass);
+  },
+
+  trash(sizeClass = 'icon--sm') {
+    return this._svg('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>', sizeClass);
   }
 };

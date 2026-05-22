@@ -26,6 +26,18 @@
 
 | Versão | Data | Resumo |
 |---|---|---|
+| **v2.2.4** | Mai/2026 | **Limpar formulário**: overlay com blur + lixeira animada (tampa abre → lixo entra → tampa fecha) antes de resetar campos |
+| **v2.1.4** | Mai/2026 | **Histórico — Atualizar**: spinner neon no botão por 2 s antes de recarregar a lista |
+| **v2.1.3** | Mai/2026 | **Histórico — Ver detalhes**: modal injetado via JS (fix SPA); CTA como botão com seta; borda semântica no modal; critérios com entrada escalonada |
+| **v2.2.3** | Mai/2026 | **Drum Picker** — itens clicáveis (Ano/Mês/Dia); clique centraliza e seleciona, além do scroll |
+| **v2.2.2** | Mai/2026 | **Drum Picker** — sem avanço automático ao rolar; Ano, Mês e Dia só avançam/confirmam pelo botão `→` |
+| **v2.2.1** | Mai/2026 | **Drum Picker** — remove auto-confirm no Dia: botão `→` no header alinhado com título; sem barra de countdown |
+| **v2.1.2** | Mai/2026 | **Validação duplicatas**: estado `duplicate` no modal de salvar — ícone de alerta âmbar, mensagem específica, auto-close em 3,2 s |
+| **v2.1.1** | Mai/2026 | **Modal detalhe histórico**: delegação global (sobrevive SPA), animação is-visible/is-leaving simétrica, spinner dedicado, score bar no header |
+| **v2.1.0** | Mai/2026 | Página **Histórico** (`historico.html`): stats, filtros, grid de cards, modal de detalhe; link na sidebar |
+| **v2.0.5** | Mai/2026 | Botão Limpar formulário apagado (`.btn-clear-form`) com ícone lixeira; hover suave para branco neon |
+| **v2.0.4** | Mai/2026 | Botão Salvar movido para `#analyser-result`; modal com estados progressivos (Aguarde → Salvando → Análise salva!); entrada/saída simétrica fade+scale |
+| **v2.0.3** | Mai/2026 | Salvar histórico: spinner branco ao lado do botão; modal de sucesso com blur animado + barra timer 5s; borda branca no botão ativo; botão Limpar formulário; backend serve frontend em `:3000` |
 | **v2.0.2** | Mai/2026 | Hover `.btn-primary` sem `translateY` (evita piscar); transição só em propriedades visuais |
 | **v2.0.1** | Mai/2026 | Botão "Salvar no histórico" no formulário; estado apagado até campos completos; animação `saveBtnWake` |
 | **v2.0.0** | Mai/2026 | Paleta white neon; sidebar; critérios por borda; modais (data + checklist); combo escala; toggle com balão; Plus Jakarta Sans; estrutura frontend/backend |
@@ -155,6 +167,7 @@ Números: font-variant-numeric: tabular-nums (tabelas, métricas, critérios)
 │   logo 96px  │  main (max-width 1200px)           │
 │   Análise    │    cards / forms / resultados      │
 │   Simulador  │                                    │
+│   Histórico  │                                    │
 └──────────────┴────────────────────────────────────┘
 ```
 
@@ -215,12 +228,25 @@ Gap padrão: `--space-4` (16px)
 
 **Salvar histórico (`.btn-save-historico`)**
 
-- Fica ao lado de **Analisar FII** no formulário
-- **Apagado** (`.btn-save-historico--dimmed`): opacity ~0.38, disabled, borda neutra, **sem** cursor de bloqueado
-- Hover apagado: tooltip `.save-historico-tip` — *"Preencha todos os campos para salvar no histórico"*
-- **Ativo** (`.btn-save-historico--ready`): quando todos os campos obrigatórios estão preenchidos
-- Transição suave + animação `saveBtnWake` (~0.65s) ao ganhar cor (borda verde sutil + glow)
-- Ao clicar: analisa + salva na API + exibe feedback em `.save-feedback`
+- Fica **dentro da div de análise** (`#analyser-result`), em `.result-actions` — só aparece após **Analisar FII**
+- Borda **branca neon** (`--neon-dim`) + glow sutil; hover intensifica glow
+- Ao clicar: modal `.save-success-modal` com fluxo progressivo:
+  1. **Carregando** — "Aguarde..." + spinner branco
+  2. **Salvando** — "Salvando análise..." + spinner
+  3. **Concluído** — "Análise salva!" + ícone check; detalhes (ticker + placar) entram com fade
+- Modal: entrada/saída **simétricas** (fade + `scale(0.96)`); blur animado no backdrop; fecha sozinho ~1,8s após conclusão
+- Erro de rede/API: feedback inline em `.save-feedback--error` (no formulário)
+- Formulário e resultado **permanecem** após salvar
+
+**Limpar formulário (`.btn-clear-form`)**
+
+- Estado **apagado** por padrão: opacity ~0.42, texto `--text-muted`, borda `--border-base`
+- Ícone **lixeira** (`.btn-clear-form__icon`, 16px) à esquerda do rótulo — SVG inline, sem emoji
+- **Hover:** transição suave (~0.5s) para texto/borda branco neon + fundo `--neon-ghost`; opacity → 1
+- **Ao clicar:** overlay `.form-clear-overlay` sobre `#analyser-form` — blur suave + lixeira central animada (tampa abre → conteúdo entra → tampa fecha, ~1,75 s); depois reseta campos e remove overlay
+- Reseta inputs, escalas, data de constituição e critérios qualitativos
+- Oculta bloco de resultado e limpa última análise em memória
+- Mantém o tipo FII selecionado (papel/tijolo)
 
 **Estados:** `:disabled` → opacity 0.4 (botões genéricos)
 
@@ -306,6 +332,37 @@ Mesma lógica dos cards: fundo `--bg-raised`, borda semântica, sem glow pesado.
 
 Gradiente horizontal: transparente → `--neon-dim` → transparente
 
+### 6.9 · Página Histórico (`historico.html`)
+
+**Stats (`.hist-stats` / `.hist-stat`)**
+
+- Grid 4 colunas: Total, Aprovados, Reprovados, Atenção
+- Valor grande branco neon; borda semântica nos cards de status
+
+**Atualizar (`.hist-refresh`)**
+
+- Botão no header; ícone de refresh troca por spinner neon (`.hist-refresh__spinner`) por **2 s**
+- Após o delay, busca API e atualiza stats + grid in-place (sem overlay de página)
+- Estado loading: `.hist-refresh--loading`, `disabled`, `aria-busy="true"`
+
+**Filtros (`.hist-filters` / `.hist-filter`)**
+
+- Pill group; ativo = gradiente branco (mesmo padrão CTA)
+- Filtra cards por `approved` | `rejected` | `warning` | `all`
+
+**Cards (`.hist-card`)**
+
+- Grid responsivo `auto-fill minmax(300px, 1fr)`
+- Borda semântica por status; hover: `translateY(-3px)` + glow
+- Ticker em destaque; badge; barra de progresso de critérios; "Ver detalhes →"
+- Entrada escalonada: `animation-delay: var(--hist-delay)`
+
+**Estados vazios**
+
+- `.hist-loading` — spinner branco
+- `.hist-empty` — borda tracejada + CTA para Análise
+- `.hist-error` — card com borda vermelha
+
 &nbsp;
 
 ---
@@ -329,13 +386,24 @@ animation: modal-slide-up 0.3s;
 | Modal | ID | Conteúdo |
 |---|---|---|
 | Checklist do tipo | `#checklist-modal` | Grid de cards por critério (tipo + geral) |
-| Data de constituição | `#historico-date-modal` | Wizard 3 passos: Ano → Mês → Dia |
+| Data de constituição | `#historico-date-modal` | Drum picker 3 etapas: Ano → Mês → Dia (scroll-snap) |
+| Sucesso ao salvar | `#save-success-modal` | Estados: loading → saving → done / duplicate; spinner/check/alert; mensagem animada |
+| Detalhe histórico | `#hist-detail-modal` | Critérios salvos; backdrop blur; CTA `.hist-card__cta`; modal injetado se ausente (SPA) |
 
-**Modal de data**
+**Modal detalhe histórico**
 
-- Steps: `.date-modal__step` — ativo = pill branco neon; concluído = borda verde
-- Mês: grid 4 colunas; Dia: grid 7 colunas (`.date-modal__chip`)
-- Confirmar → exibe `DD/MM/AAAA · N anos` no picker
+- CTA: `.hist-card__cta` — botão ghost com seta; hover desloca ícone
+- Modal: `ensureDetailModal()` injeta `#hist-detail-modal` quando navegação SPA não carrega o overlay
+- `data-status` no modal → borda/glow semântico (approved / rejected / warning)
+- Critérios: `.hist-detail__criterion` com entrada escalonada (`--criterion-i`)
+
+**Modal de data (Drum Picker)**
+
+- Header: `.date-modal__panel-header` — título à esquerda; ações à direita (`×` fechar + `→` avançar/confirmar)
+- Etapas: drum rolável (`.drum-picker__track`, scroll-snap); label em `#drum-step-label`; breadcrumb em `#drum-breadcrumb`
+- **Rolar ou clicar** seleciona o valor no draft (Ano / Mês / Dia) — **sem avanço automático**
+- **Botão `→`** (`.date-modal__advance`): Ano/Mês → avança etapa; Dia → confirma e fecha
+- Confirmar → exibe `DD/MM/AAAA · N anos` no picker (`.input--picker--filled`)
 
 **Body lock:** `body.modal-open { overflow: hidden }`
 

@@ -1,12 +1,20 @@
 const SidebarNav = {
   pageUrls: {
     analise: 'index.html',
-    simulador: 'simulador.html'
+    simulador: 'simulador.html',
+    historico: 'historico.html'
   },
 
   pages: {
     'index.html': 'analise',
-    'simulador.html': 'simulador'
+    'simulador.html': 'simulador',
+    'historico.html': 'historico'
+  },
+
+  pageOrder: {
+    analise: 0,
+    simulador: 1,
+    historico: 2
   },
 
   cache: {},
@@ -45,6 +53,12 @@ const SidebarNav = {
 
   getLinkByPage(page) {
     return this.nav.querySelector(`[data-page="${page}"]`);
+  },
+
+  getTransitionDirection(fromPage, toPage) {
+    const from = this.pageOrder[fromPage] ?? 0;
+    const to = this.pageOrder[toPage] ?? 0;
+    return to > from ? 'forward' : 'backward';
   },
 
   wait(ms) {
@@ -157,6 +171,7 @@ const SidebarNav = {
     this.isNavigating = true;
     const fromPage = this.currentPage;
     const targetLink = this.getLinkByPage(toPage);
+    const direction = this.getTransitionDirection(fromPage, toPage);
 
     this.setActiveLink(toPage);
     this.positionIndicator(targetLink, false);
@@ -169,7 +184,7 @@ const SidebarNav = {
         'page-enter-from-left'
       );
       this.content.classList.add(
-        toPage === 'simulador' ? 'page-exit-left' : 'page-exit-right'
+        direction === 'forward' ? 'page-exit-left' : 'page-exit-right'
       );
       await this.wait(280);
     }
@@ -188,7 +203,7 @@ const SidebarNav = {
         this.content.classList.remove('page-exit-left', 'page-exit-right');
         void this.content.offsetWidth;
         this.content.classList.add(
-          toPage === 'simulador' ? 'page-enter-from-right' : 'page-enter-from-left'
+          direction === 'forward' ? 'page-enter-from-right' : 'page-enter-from-left'
         );
       }
 

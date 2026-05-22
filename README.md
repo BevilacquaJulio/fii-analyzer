@@ -7,6 +7,9 @@ Sistema de análise e simulação de Fundos Imobiliários (FIIs).
 ```
 fii_analyser/
 ├── frontend/          → Interface (HTML, CSS, JavaScript)
+│   ├── index.html     → Análise de FII
+│   ├── simulador.html → Simulador
+│   └── historico.html → Histórico de análises
 ├── backend/           → API Node.js + MySQL (MVC)
 ├── docs/              → Documentação e prompts do projeto
 └── README.md
@@ -14,7 +17,7 @@ fii_analyser/
 
 ## Frontend
 
-Abra `frontend/index.html` no navegador ou use uma extensão **Live Server**.
+Abra `http://localhost:3000` (com o backend rodando — ele serve o frontend) ou use **Live Server** em `frontend/`.
 
 ```bash
 # Testes da lógica (opcional)

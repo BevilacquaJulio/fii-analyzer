@@ -33,6 +33,12 @@
         </span>
         Simulador
       </a>
+      <a href="historico.html" class="sidebar__link" data-page="historico">
+        <span class="sidebar__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </span>
+        Histórico
+      </a>
     </nav>
   </aside>
 
@@ -160,16 +166,32 @@
 
         <p id="analyser-error" class="form-error" hidden></p>
 
+        <div class="form-clear-overlay" id="form-clear-overlay" hidden aria-hidden="true">
+          <div class="form-clear-trash" aria-hidden="true">
+            <svg class="form-clear-trash__svg" viewBox="0 0 64 72" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path class="form-clear-trash__body" d="M18 30h28l-3 34a2 2 0 0 1-2 1.8H23a2 2 0 0 1-2-1.8L18 30z" fill="rgba(255,255,255,0.06)"/>
+              <line class="form-clear-trash__body" x1="26" y1="38" x2="24" y2="56"/>
+              <line class="form-clear-trash__body" x1="32" y1="38" x2="32" y2="56"/>
+              <line class="form-clear-trash__body" x1="38" y1="38" x2="40" y2="56"/>
+              <g class="form-clear-trash__content">
+                <path d="M27 44c0-2 2.2-4 5-4s5 2 5 4v2c0 1.1-.9 2-2 2h-6c-1.1 0-2-.9-2-2v-2z" fill="currentColor" stroke="none"/>
+                <path d="M25 46h14" stroke="currentColor" stroke-width="2"/>
+              </g>
+              <g class="form-clear-trash__lid">
+                <path d="M16 30h32" stroke-width="2.5"/>
+                <path d="M22 30V25a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5" fill="rgba(255,255,255,0.1)"/>
+                <path d="M28 21V17M36 21V17M28 17h8"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+
         <div class="actions">
           <button type="submit" class="btn btn-primary">Analisar FII</button>
-          <div class="save-historico-wrap save-historico-wrap--dimmed" id="save-historico-wrap">
-            <span class="save-historico-tip" id="save-historico-tip" role="tooltip">
-              Preencha todos os campos para salvar no histórico
-            </span>
-            <button type="button" class="btn btn-save-historico btn-save-historico--dimmed" id="btn-salvar-analise" disabled aria-disabled="true">
-              Salvar no histórico
-            </button>
-          </div>
+          <button type="button" class="btn btn-clear-form" id="btn-limpar-formulario">
+            <svg class="btn-clear-form__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            Limpar formulário
+          </button>
           <p id="analyser-save-feedback" class="save-feedback" hidden></p>
         </div>
       </form>
@@ -180,25 +202,23 @@
 
   <div class="date-modal" id="historico-date-modal" hidden aria-hidden="true">
     <div class="date-modal__backdrop" data-close-historico-modal></div>
-    <div class="date-modal__panel" role="dialog" aria-labelledby="historico-date-title" aria-modal="true">
-      <button type="button" class="date-modal__close" aria-label="Fechar" data-close-historico-modal>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-      <header class="date-modal__header">
-        <h2 class="date-modal__title" id="historico-date-title">Data de constituição</h2>
-        <p class="date-modal__subtitle">Informe quando o fundo foi constituído</p>
-        <ol class="date-modal__steps" aria-label="Etapas">
-          <li class="date-modal__step is-active" data-step="0">Ano</li>
-          <li class="date-modal__step" data-step="1">Mês</li>
-          <li class="date-modal__step" data-step="2">Dia</li>
-        </ol>
-      </header>
-      <div class="date-modal__body" id="historico-date-body"></div>
-      <p class="date-modal__error" id="historico-date-error" hidden></p>
-      <footer class="date-modal__footer">
-        <button type="button" class="btn btn-secondary" id="historico-date-back" hidden>Voltar</button>
-        <button type="button" class="btn btn-primary" id="historico-date-next">Próximo</button>
-      </footer>
+    <div class="date-modal__panel date-modal__panel--drum" role="dialog" aria-labelledby="historico-date-title" aria-modal="true">
+      <div class="date-modal__panel-header">
+        <div class="date-modal__header-text">
+          <h2 class="date-modal__title" id="historico-date-title">Data de constituição</h2>
+          <p class="date-modal__drum-label" id="drum-step-label">Selecione o ano</p>
+          <p class="date-modal__drum-crumb" id="drum-breadcrumb" aria-live="polite"></p>
+        </div>
+        <div class="date-modal__header-actions">
+          <button type="button" class="date-modal__close" aria-label="Fechar" data-close-historico-modal>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+          <button type="button" class="date-modal__advance" id="drum-advance-btn" aria-label="Avançar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="drum-stage" id="drum-stage" aria-live="polite"></div>
     </div>
   </div>
 
@@ -212,6 +232,26 @@
     </div>
   </div>
 
+  <div class="save-success-modal" id="save-success-modal" hidden aria-hidden="true" data-state="loading">
+    <div class="save-success-modal__backdrop"></div>
+    <div class="save-success-modal__panel" role="alertdialog" aria-labelledby="save-modal-message" aria-modal="true">
+      <div class="save-success-modal__visual" aria-hidden="true">
+        <span class="save-success-modal__spinner"></span>
+        <span class="save-success-modal__check">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+        <span class="save-success-modal__alert">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </span>
+      </div>
+      <p class="save-success-modal__message" id="save-modal-message">Aguarde...</p>
+      <div class="save-success-modal__details" id="save-modal-details" hidden>
+        <p class="save-success-modal__ticker" id="save-modal-ticker"></p>
+        <p class="save-success-modal__score" id="save-modal-score"></p>
+      </div>
+    </div>
+  </div>
+
   <script src="js/icons.js"></script>
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
@@ -222,6 +262,7 @@
   <script src="js/simulator.js"></script>
   <script src="js/analyser-page.js"></script>
   <script src="js/simulator-page.js"></script>
+  <script src="js/historico-page.js"></script>
   <script src="js/page-init.js"></script>
   <script src="js/sidebar.js"></script>
 </body>

@@ -1,20 +1,32 @@
 const HistoricoDatePicker = {
   step: 0,
   draft: { ano: '', mes: '', dia: '' },
-  MONTHS: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+
+  ITEM_H:   44,
+  VISIBLE:  5,
+  MONTHS:   ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
+  MONTH_FULL: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
+  STEP_LABELS: ['Selecione o ano', 'Selecione o mês', 'Selecione o dia'],
+
+  _scrollTimer: null,
+  _docBound:    false,
+
+  // ─── públicos ─────────────────────────────────────────────────────────────
 
   init() {
     const trigger = document.getElementById('historico-trigger');
-    const modal = document.getElementById('historico-date-modal');
-    if (!trigger || !modal) return;
-
+    if (!trigger) return;
     trigger.onclick = () => this.open();
-    document.getElementById('historico-date-next').onclick = () => this.next();
-    document.getElementById('historico-date-back').onclick = () => this.back();
+
+    const modal = document.getElementById('historico-date-modal');
+    if (!modal) return;
 
     modal.querySelectorAll('[data-close-historico-modal]').forEach((el) => {
       el.onclick = () => this.close();
     });
+
+    const advBtn = document.getElementById('drum-advance-btn');
+    if (advBtn) advBtn.onclick = () => this._advanceOrConfirm();
 
     if (!this._docBound) {
       this._docBound = true;
@@ -26,20 +38,11 @@ const HistoricoDatePicker = {
     }
   },
 
-  getStored() {
-    return {
-      ano: document.getElementById('historico-ano')?.value || '',
-      mes: document.getElementById('historico-mes')?.value || '',
-      dia: document.getElementById('historico-dia')?.value || ''
-    };
-  },
-
   getValues() {
-    const stored = this.getStored();
     return {
-      ano: Utils.parseNumber(stored.ano),
-      mes: Utils.parseNumber(stored.mes),
-      dia: Utils.parseNumber(stored.dia)
+      ano: Utils.parseNumber(document.getElementById('historico-ano')?.value || ''),
+      mes: Utils.parseNumber(document.getElementById('historico-mes')?.value || ''),
+      dia: Utils.parseNumber(document.getElementById('historico-dia')?.value || '')
     };
   },
 
@@ -49,195 +52,37 @@ const HistoricoDatePicker = {
   },
 
   open() {
-    const stored = this.getStored();
+    const stored = {
+      ano: document.getElementById('historico-ano')?.value || '',
+      mes: document.getElementById('historico-mes')?.value || '',
+      dia: document.getElementById('historico-dia')?.value || ''
+    };
     this.draft = { ...stored };
-    this.step = 0;
-    this.clearError();
-    this.renderStep();
+    this.step  = 0;
+
+    clearTimeout(this._scrollTimer);
+
     const modal = document.getElementById('historico-date-modal');
     modal.hidden = false;
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('modal-open');
-    modal.querySelector('#historico-date-body input, #historico-date-body button')?.focus()
-      || document.getElementById('historico-date-next')?.focus();
+
+    this._renderDrum(false);
   },
 
   close() {
+    clearTimeout(this._scrollTimer);
+
     const modal = document.getElementById('historico-date-modal');
     if (!modal || modal.hidden) return;
     modal.hidden = true;
     modal.setAttribute('aria-hidden', 'true');
-    if (!document.getElementById('checklist-modal') || document.getElementById('checklist-modal').hidden) {
-      document.body.classList.remove('modal-open');
-    }
+
+    const hasOther = document.getElementById('checklist-modal')
+      && !document.getElementById('checklist-modal').hidden;
+    if (!hasOther) document.body.classList.remove('modal-open');
+
     document.getElementById('historico-trigger')?.focus();
-  },
-
-  clearError() {
-    const err = document.getElementById('historico-date-error');
-    if (err) {
-      err.hidden = true;
-      err.textContent = '';
-    }
-  },
-
-  showError(message) {
-    const err = document.getElementById('historico-date-error');
-    if (!err) return;
-    err.textContent = message;
-    err.hidden = false;
-  },
-
-  updateStepIndicators() {
-    document.querySelectorAll('.date-modal__step').forEach((el) => {
-      const step = Number(el.dataset.step);
-      el.classList.toggle('is-active', step === this.step);
-      el.classList.toggle('is-done', step < this.step);
-    });
-  },
-
-  renderStep() {
-    const body = document.getElementById('historico-date-body');
-    const backBtn = document.getElementById('historico-date-back');
-    const nextBtn = document.getElementById('historico-date-next');
-    if (!body || !backBtn || !nextBtn) return;
-
-    this.updateStepIndicators();
-    backBtn.hidden = this.step === 0;
-    nextBtn.textContent = this.step === 2 ? 'Confirmar' : 'Próximo';
-    this.clearError();
-
-    if (this.step === 0) {
-      body.innerHTML = `
-        <label class="date-modal__field-label" for="historico-draft-ano">Ano</label>
-        <input class="input" type="number" id="historico-draft-ano" inputmode="numeric" placeholder="Ex.: 2018" min="1990" max="${new Date().getFullYear()}" value="${this.draft.ano}">`;
-      const input = document.getElementById('historico-draft-ano');
-      input?.focus();
-      input?.select();
-      return;
-    }
-
-    if (this.step === 1) {
-      body.innerHTML = `
-        <p class="date-modal__field-label">Mês</p>
-        <div class="date-modal__grid date-modal__grid--months" role="group" aria-label="Mês">
-          ${this.MONTHS.map((name, i) => {
-            const val = i + 1;
-            const selected = Number(this.draft.mes) === val ? ' is-selected' : '';
-            return `<button type="button" class="date-modal__chip${selected}" data-month="${val}">${name}</button>`;
-          }).join('')}
-        </div>`;
-      body.querySelectorAll('[data-month]').forEach((btn) => {
-        btn.onclick = () => {
-          body.querySelectorAll('[data-month]').forEach((b) => b.classList.remove('is-selected'));
-          btn.classList.add('is-selected');
-          this.draft.mes = btn.dataset.month;
-        };
-      });
-      return;
-    }
-
-    const ano = Utils.parseNumber(this.draft.ano);
-    const mes = Utils.parseNumber(this.draft.mes);
-    const maxDay = Utils.daysInMonth(ano, mes);
-    body.innerHTML = `
-      <p class="date-modal__field-label">Dia</p>
-      <div class="date-modal__grid date-modal__grid--days" role="group" aria-label="Dia">
-        ${Array.from({ length: maxDay }, (_, i) => {
-          const val = i + 1;
-          const selected = Number(this.draft.dia) === val ? ' is-selected' : '';
-          return `<button type="button" class="date-modal__chip${selected}" data-day="${val}">${val}</button>`;
-        }).join('')}
-      </div>`;
-    body.querySelectorAll('[data-day]').forEach((btn) => {
-      btn.onclick = () => {
-        body.querySelectorAll('[data-day]').forEach((b) => b.classList.remove('is-selected'));
-        btn.classList.add('is-selected');
-        this.draft.dia = btn.dataset.day;
-      };
-    });
-  },
-
-  validateCurrentStep() {
-    if (this.step === 0) {
-      const input = document.getElementById('historico-draft-ano');
-      const ano = Utils.parseNumber(input?.value);
-      const currentYear = new Date().getFullYear();
-      if (!Number.isFinite(ano) || ano < 1990 || ano > currentYear) {
-        this.showError(`Informe um ano entre 1990 e ${currentYear}.`);
-        input?.focus();
-        return false;
-      }
-      this.draft.ano = String(Math.trunc(ano));
-      return true;
-    }
-
-    if (this.step === 1) {
-      const mes = Utils.parseNumber(this.draft.mes);
-      if (!Number.isFinite(mes) || mes < 1 || mes > 12) {
-        this.showError('Selecione o mês.');
-        return false;
-      }
-      return true;
-    }
-
-    const ano = Utils.parseNumber(this.draft.ano);
-    const mes = Utils.parseNumber(this.draft.mes);
-    const dia = Utils.parseNumber(this.draft.dia);
-    if (!Utils.isValidDate(ano, mes, dia)) {
-      this.showError('Selecione um dia válido. A data não pode ser futura.');
-      return false;
-    }
-    return true;
-  },
-
-  next() {
-    if (!this.validateCurrentStep()) return;
-
-    if (this.step < 2) {
-      this.step += 1;
-      if (this.step === 2) {
-        const ano = Utils.parseNumber(this.draft.ano);
-        const mes = Utils.parseNumber(this.draft.mes);
-        const maxDay = Utils.daysInMonth(ano, mes);
-        if (Number(this.draft.dia) > maxDay) this.draft.dia = '';
-      }
-      this.renderStep();
-      return;
-    }
-
-    this.confirm();
-  },
-
-  back() {
-    if (this.step === 0) return;
-    if (this.step === 1) {
-      const input = document.getElementById('historico-draft-ano');
-      if (input) this.draft.ano = input.value;
-    }
-    this.step -= 1;
-    this.renderStep();
-  },
-
-  confirm() {
-    const ano = Utils.parseNumber(this.draft.ano);
-    const mes = Utils.parseNumber(this.draft.mes);
-    const dia = Utils.parseNumber(this.draft.dia);
-
-    document.getElementById('historico-ano').value = ano;
-    document.getElementById('historico-mes').value = mes;
-    document.getElementById('historico-dia').value = dia;
-
-    const years = Utils.yearsSinceDate(ano, mes, dia);
-    const display = document.getElementById('historico-display');
-    const trigger = document.getElementById('historico-trigger');
-    if (display) {
-      display.textContent = `${Utils.formatDateBR(ano, mes, dia)} · ${years} ${years === 1 ? 'ano' : 'anos'}`;
-    }
-    trigger?.classList.remove('error');
-    trigger?.classList.add('input--picker--filled');
-    document.dispatchEvent(new CustomEvent('analyser:form-changed'));
-    this.close();
   },
 
   reset() {
@@ -250,5 +95,223 @@ const HistoricoDatePicker = {
     if (display) display.textContent = 'Selecionar ano, mês e dia';
     trigger?.classList.remove('error', 'input--picker--filled');
     document.dispatchEvent(new CustomEvent('analyser:form-changed'));
+  },
+
+  // ─── renderização ────────────────────────────────────────────────────────
+
+  _renderDrum(animate = true) {
+    const label     = document.getElementById('drum-step-label');
+    const crumb     = document.getElementById('drum-breadcrumb');
+    const stage     = document.getElementById('drum-stage');
+    if (!stage) return;
+
+    if (label) label.textContent = this.STEP_LABELS[this.step];
+    if (crumb) crumb.textContent = this._crumbText();
+
+    const items   = this._stepItems();
+    const current = [this.draft.ano, this.draft.mes, this.draft.dia][this.step];
+    const padding = this.ITEM_H * Math.floor(this.VISIBLE / 2);
+
+    const itemsHtml = items.map((item) => {
+      const val = typeof item === 'object' ? item.value : item;
+      const txt = typeof item === 'object' ? item.label : String(item);
+      return `<div class="drum-item" data-value="${val}">${txt}</div>`;
+    }).join('');
+
+    const drum = document.createElement('div');
+    drum.className = 'drum-picker' + (animate ? ' drum-enter' : '');
+    drum.innerHTML = `
+      <div class="drum-picker__fade drum-picker__fade--top" aria-hidden="true"></div>
+      <div class="drum-picker__track" id="drum-track" tabindex="-1">
+        <div style="height:${padding}px" aria-hidden="true"></div>
+        ${itemsHtml}
+        <div style="height:${padding}px" aria-hidden="true"></div>
+      </div>
+      <div class="drum-picker__band" aria-hidden="true"></div>
+      <div class="drum-picker__fade drum-picker__fade--bottom" aria-hidden="true"></div>`;
+
+    stage.innerHTML = '';
+    stage.appendChild(drum);
+
+    const track = drum.querySelector('.drum-picker__track');
+
+    // Scroll imediato para o valor atual
+    const idx = items.findIndex((item) => {
+      const v = typeof item === 'object' ? String(item.value) : String(item);
+      return v === String(current);
+    });
+    const startIdx = idx >= 0 ? idx : 0;
+
+    track.style.scrollBehavior = 'auto';
+    track.scrollTop = startIdx * this.ITEM_H;
+
+    requestAnimationFrame(() => {
+      track.style.scrollBehavior = '';
+      this._highlightItems(track, items, startIdx);
+      this._bindScroll(track, items);
+      this._bindClicks(track, items);
+      if (animate) {
+        requestAnimationFrame(() => drum.classList.remove('drum-enter'));
+      }
+    });
+  },
+
+  _itemValue(item) {
+    return typeof item === 'object' ? String(item.value) : String(item);
+  },
+
+  _setDraftValue(value) {
+    if (this.step === 0) this.draft.ano = value;
+    else if (this.step === 1) this.draft.mes = value;
+    else this.draft.dia = value;
+  },
+
+  _selectAtIndex(track, items, idx, smooth = true) {
+    const safeIdx = Math.max(0, Math.min(idx, items.length - 1));
+    const value   = this._itemValue(items[safeIdx]);
+
+    track.scrollTo({ top: safeIdx * this.ITEM_H, behavior: smooth ? 'smooth' : 'auto' });
+    this._highlightItems(track, items, safeIdx);
+    this._setDraftValue(value);
+
+    return { safeIdx, value };
+  },
+
+  _stepItems() {
+    if (this.step === 0) {
+      const max = new Date().getFullYear();
+      const items = [];
+      for (let y = max; y >= 1985; y--) items.push(y);
+      return items;
+    }
+    if (this.step === 1) {
+      return this.MONTHS.map((name, i) => ({ value: i + 1, label: name }));
+    }
+    const ano  = Number(this.draft.ano)  || new Date().getFullYear();
+    const mes  = Number(this.draft.mes)  || 1;
+    const maxD = Utils.daysInMonth(ano, mes);
+    return Array.from({ length: maxD }, (_, i) => i + 1);
+  },
+
+  _crumbText() {
+    const parts = [];
+    if (this.step >= 1 && this.draft.ano) parts.push(this.draft.ano);
+    if (this.step >= 2 && this.draft.mes) {
+      parts.push(this.MONTH_FULL[Number(this.draft.mes) - 1] || this.draft.mes);
+    }
+    return parts.join(' / ');
+  },
+
+  // ─── scroll e seleção ───────────────────────────────────────────────────
+
+  _bindScroll(track, items) {
+    track.addEventListener('scroll', () => {
+      clearTimeout(this._scrollTimer);
+
+      // Atualiza visual dos itens em tempo real
+      const rawIdx = track.scrollTop / this.ITEM_H;
+      this._highlightItems(track, items, rawIdx);
+
+      this._scrollTimer = setTimeout(() => {
+        const idx     = Math.round(track.scrollTop / this.ITEM_H);
+        // Snap suave e armazena no draft — avanço/confirma só pelo botão →
+        this._selectAtIndex(track, items, idx, true);
+      }, 280);
+    }, { passive: true });
+  },
+
+  _bindClicks(track, items) {
+    track.querySelectorAll('.drum-item').forEach((el, idx) => {
+      el.onclick = () => {
+        clearTimeout(this._scrollTimer);
+        this._selectAtIndex(track, items, idx, true);
+      };
+    });
+  },
+
+  // Lê o valor atual no drum e avança/confirma dependendo da etapa
+  _advanceOrConfirm() {
+    const track = document.getElementById('drum-track');
+    if (!track) return;
+
+    const items = this._stepItems();
+    const idx   = Math.round(track.scrollTop / this.ITEM_H);
+    const { value } = this._selectAtIndex(track, items, idx, true);
+
+    clearTimeout(this._scrollTimer);
+
+    if (this.step === 0) {
+      this.draft.ano = value;
+      setTimeout(() => this._advance(), 180);
+    } else if (this.step === 1) {
+      this.draft.mes = value;
+      setTimeout(() => this._advance(), 180);
+    } else {
+      this.draft.dia = value;
+      setTimeout(() => this.confirm(), 180);
+    }
+  },
+
+  _highlightItems(track, items, centerIndex) {
+    track.querySelectorAll('.drum-item').forEach((el, i) => {
+      const dist    = Math.abs(i - centerIndex);
+      const opacity = Math.max(0.22, 1 - dist * 0.28);
+      const scale   = Math.max(0.82, 1 - dist * 0.055);
+      const weight  = dist < 0.5 ? 700 : dist < 1.5 ? 500 : 400;
+      el.style.opacity   = opacity;
+      el.style.transform = `scale(${scale})`;
+      el.style.fontWeight = weight;
+    });
+  },
+
+  // ─── avanço entre etapas ────────────────────────────────────────────────
+
+  _advance() {
+    const stage = document.getElementById('drum-stage');
+    const drum  = stage?.querySelector('.drum-picker');
+    if (!drum) return;
+
+    drum.classList.add('drum-exit');
+    setTimeout(() => {
+      this.step += 1;
+      if (this.step === 2) {
+        const ano  = Number(this.draft.ano);
+        const mes  = Number(this.draft.mes);
+        const maxD = Utils.daysInMonth(ano, mes);
+        if (Number(this.draft.dia) > maxD) this.draft.dia = '';
+      }
+      this._renderDrum(true);
+    }, 260);
+  },
+
+  // ─── confirmação ─────────────────────────────────────────────────────────
+
+  confirm() {
+    const ano = Utils.parseNumber(this.draft.ano);
+    const mes = Utils.parseNumber(this.draft.mes);
+    const dia = Utils.parseNumber(this.draft.dia);
+
+    if (!Utils.isValidDate(ano, mes, dia)) {
+      this.close();
+      return;
+    }
+
+    document.getElementById('historico-ano').value = ano;
+    document.getElementById('historico-mes').value = mes;
+    document.getElementById('historico-dia').value = dia;
+
+    const years   = Utils.yearsSinceDate(ano, mes, dia);
+    const display = document.getElementById('historico-display');
+    const trigger = document.getElementById('historico-trigger');
+
+    if (display) {
+      display.textContent =
+        `${Utils.formatDateBR(ano, mes, dia)} · ${years} ${years === 1 ? 'ano' : 'anos'}`;
+    }
+    trigger?.classList.remove('error');
+    trigger?.classList.add('input--picker--filled');
+
+    document.dispatchEvent(new CustomEvent('analyser:form-changed'));
+    this.close();
   }
 };

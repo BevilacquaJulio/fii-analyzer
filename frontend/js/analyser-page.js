@@ -24,13 +24,12 @@ const AnalyserPage = {
     document.querySelectorAll('.yes-no-btn').forEach((btn) => {
       btn.onclick = () => {
         Analyser.setQualitative(btn.dataset.field, btn.dataset.value);
-        this.updateSaveButtonState();
       };
     });
 
     ScaleDropdown.init();
-    this.bindFormWatchers(form);
     this.bindSalvarAnalise();
+    this.bindLimparFormulario();
 
     form.onsubmit = (e) => {
       e.preventDefault();
@@ -54,7 +53,6 @@ const AnalyserPage = {
             el.classList.add('error');
           }
         });
-        this.updateSaveButtonState();
         return;
       }
 
@@ -62,42 +60,32 @@ const AnalyserPage = {
       Analyser.setLastAnalysis(data, result);
       Analyser.renderResult(result);
     };
-
-    this.updateSaveButtonState();
   },
 
-  bindFormWatchers(form) {
-    form.addEventListener('input', () => this.updateSaveButtonState());
-    form.addEventListener('change', () => this.updateSaveButtonState());
-    document.addEventListener('analyser:form-changed', () => this.updateSaveButtonState());
-  },
-
-  updateSaveButtonState() {
-    const btn = document.getElementById('btn-salvar-analise');
-    const wrap = document.getElementById('save-historico-wrap');
-    if (!btn || btn.dataset.saving === 'true') return;
-
-    const complete = Analyser.isFormComplete();
-    btn.disabled = !complete;
-    btn.setAttribute('aria-disabled', complete ? 'false' : 'true');
-    btn.classList.toggle('btn-save-historico--ready', complete);
-    btn.classList.toggle('btn-save-historico--dimmed', !complete);
-    wrap?.classList.toggle('save-historico-wrap--ready', complete);
-    wrap?.classList.toggle('save-historico-wrap--dimmed', !complete);
+  async _isDuplicate(ticker) {
+    try {
+      const data = await Api.listarAnalises(200);
+      return (data.analises || []).some((a) => a.ticker === ticker);
+    } catch {
+      return false;
+    }
   },
 
   bindSalvarAnalise() {
-    const btn = document.getElementById('btn-salvar-analise');
-    if (!btn || btn.dataset.bound === 'true') return;
-    btn.dataset.bound = 'true';
+    const container = document.getElementById('analyser-result');
+    if (!container || container.dataset.saveBound === 'true') return;
+    container.dataset.saveBound = 'true';
 
-    btn.onclick = async () => {
-      if (btn.disabled || !Analyser.isFormComplete()) return;
+    container.addEventListener('click', async (e) => {
+      const btn = e.target.closest('#btn-salvar-analise');
+      if (!btn || btn.disabled) return;
 
-      const data = Analyser.readFormData();
+      e.preventDefault();
+      e.stopPropagation();
+
+      const data   = Analyser.readFormData();
       const result = Analyser.analyze(data);
       Analyser.setLastAnalysis(data, result);
-      Analyser.renderResult(result);
 
       const payload = Analyser.buildSavePayload();
       if (!payload) {
@@ -105,24 +93,49 @@ const AnalyserPage = {
         return;
       }
 
-      btn.dataset.saving = 'true';
       btn.disabled = true;
-      btn.textContent = 'Salvando...';
       Analyser.hideSaveFeedback();
+      Analyser.openSaveModal();
 
       try {
-        const resposta = await Api.salvarAnalise(payload);
-        Analyser.showSaveFeedback(`${resposta.mensagem} (ID #${resposta.id})`, 'success');
+        // Verificação de duplicata em paralelo com o delay visual
+        const [isDuplicate] = await Promise.all([
+          this._isDuplicate(payload.ticker),
+          Analyser._delay(480)
+        ]);
+
+        if (isDuplicate) {
+          Analyser.setSaveModalState('duplicate');
+          clearTimeout(Analyser._saveModalCloseTimer);
+          Analyser._saveModalCloseTimer = setTimeout(() => Analyser.closeSaveModal(), 3200);
+          return;
+        }
+
+        Analyser.setSaveModalState('saving');
+        await Api.salvarAnalise(payload);
+
+        Analyser.setSaveModalState('done', result);
+        clearTimeout(Analyser._saveModalCloseTimer);
+        Analyser._saveModalCloseTimer = setTimeout(() => Analyser.closeSaveModal(), 1800);
       } catch (err) {
+        Analyser.closeSaveModal();
         Analyser.showSaveFeedback(
           err.message || 'Não foi possível salvar. Verifique se a API está rodando.',
           'error'
         );
       } finally {
-        btn.dataset.saving = 'false';
-        btn.textContent = 'Salvar no histórico';
-        this.updateSaveButtonState();
+        btn.disabled = false;
       }
+    });
+  },
+
+  bindLimparFormulario() {
+    const btn = document.getElementById('btn-limpar-formulario');
+    if (!btn || btn.dataset.bound === 'true') return;
+    btn.dataset.bound = 'true';
+
+    btn.onclick = () => {
+      Analyser.playClearFormAnimation();
     };
   },
 
@@ -137,13 +150,11 @@ const AnalyserPage = {
 
     if (Analyser.currentType === type && btn.classList.contains('toggle-active')) {
       Analyser.clearType();
-      this.updateSaveButtonState();
       return;
     }
 
     Analyser.setType(type);
     Analyser.revealBalloonHint(type);
-    this.updateSaveButtonState();
 
     setTimeout(() => {
       document.getElementById('analyser-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });

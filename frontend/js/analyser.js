@@ -316,7 +316,8 @@ const Analyser = {
     if (el) el.hidden = true;
   },
 
-  renderResult(result) {
+  renderResult(result, options = {}) {
+    const { scroll = true } = options;
     const container = document.getElementById('analyser-result');
     const statusConfig = {
       approved: { badge: 'badge-approved', card: 'card-approved', icon: Icons.checkCircle(), label: 'APROVADO' },
@@ -354,10 +355,179 @@ const Analyser = {
         ${result.typeResults.map(renderCriterion).join('')}
         <p class="criteria-section-title">Checklist geral</p>
         ${result.generalResults.map(renderCriterion).join('')}
+        <div class="result-actions">
+          <button type="button" class="btn btn-save-historico btn-save-historico--ready" id="btn-salvar-analise">
+            Salvar no histórico
+          </button>
+        </div>
       </div>`;
 
     container.hidden = false;
-    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (scroll) {
+      container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  },
+
+  async playClearFormAnimation() {
+    const form    = document.getElementById('analyser-form');
+    const overlay = document.getElementById('form-clear-overlay');
+    const trash   = overlay?.querySelector('.form-clear-trash');
+    const btn     = document.getElementById('btn-limpar-formulario');
+
+    if (!form || !overlay || !trash) {
+      this.clearForm();
+      return;
+    }
+
+    if (form.dataset.clearing === 'true') return;
+    form.dataset.clearing = 'true';
+    if (btn) btn.disabled = true;
+
+    overlay.hidden = false;
+    overlay.setAttribute('aria-hidden', 'false');
+    void overlay.offsetWidth;
+    overlay.classList.add('is-visible');
+
+    trash.classList.remove('is-animating');
+    void trash.offsetWidth;
+    trash.classList.add('is-animating');
+
+    await this._delay(1750);
+
+    this.clearForm();
+
+    overlay.classList.remove('is-visible');
+    await this._delay(350);
+
+    overlay.hidden = true;
+    overlay.setAttribute('aria-hidden', 'true');
+    trash.classList.remove('is-animating');
+    form.dataset.clearing = 'false';
+    if (btn) btn.disabled = false;
+  },
+
+  clearForm() {
+    const form = document.getElementById('analyser-form');
+    if (!form) return;
+
+    form.querySelectorAll('input[type="text"], input[type="number"]').forEach((el) => {
+      el.value = '';
+      el.classList.remove('error');
+    });
+
+    form.querySelectorAll('.input-combo').forEach((el) => el.classList.remove('error'));
+    document.getElementById('historico-trigger')?.classList.remove('error');
+
+    HistoricoDatePicker.reset();
+
+    const plScale = document.getElementById('patrimonio-liquido-scale')?.closest('.scale-dropdown');
+    if (plScale) ScaleDropdown.select(plScale, 'bilhoes');
+
+    const liqScale = document.getElementById('liquidez-scale')?.closest('.scale-dropdown');
+    if (liqScale) ScaleDropdown.select(liqScale, 'milhoes');
+
+    this.qualitative = { dividendos: null, cotistas: null };
+    document.querySelectorAll('.yes-no-btn').forEach((btn) => {
+      btn.classList.remove('selected-yes', 'selected-no', 'selected-crescente');
+    });
+
+    const errorEl = document.getElementById('analyser-error');
+    if (errorEl) errorEl.hidden = true;
+
+    this.hideSaveFeedback();
+
+    const resultEl = document.getElementById('analyser-result');
+    if (resultEl) {
+      resultEl.hidden = true;
+      resultEl.innerHTML = '';
+    }
+    this.clearLastAnalysis();
+
+    document.dispatchEvent(new CustomEvent('analyser:form-changed'));
+  },
+
+  _saveModalMessages: {
+    loading:   'Aguarde...',
+    saving:    'Salvando análise...',
+    done:      'Análise salva!',
+    duplicate: 'Esta análise já foi salva anteriormente.'
+  },
+
+  _delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  },
+
+  openSaveModal() {
+    const modal = document.getElementById('save-success-modal');
+    const details = document.getElementById('save-modal-details');
+    if (!modal) return;
+
+    clearTimeout(this._saveModalCloseTimer);
+    clearTimeout(this._saveModalLeaveTimer);
+
+    if (details) details.hidden = true;
+
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
+    modal.classList.remove('is-leaving');
+    void modal.offsetWidth;
+    modal.classList.add('is-visible');
+    document.body.classList.add('modal-open');
+
+    this.setSaveModalState('loading', null, false);
+  },
+
+  setSaveModalState(state, result = null, animate = true) {
+    const modal = document.getElementById('save-success-modal');
+    const messageEl = document.getElementById('save-modal-message');
+    const details = document.getElementById('save-modal-details');
+    const tickerEl = document.getElementById('save-modal-ticker');
+    const scoreEl = document.getElementById('save-modal-score');
+    if (!modal || !messageEl) return;
+
+    const apply = () => {
+      modal.dataset.state = state;
+      messageEl.textContent = this._saveModalMessages[state];
+
+      if (state === 'done' && result && details && tickerEl && scoreEl) {
+        tickerEl.textContent = result.ticker;
+        scoreEl.textContent = `${result.passedCount} de ${result.totalCount} critérios · ${result.typeLabel}`;
+        details.hidden = false;
+      } else if (details) {
+        details.hidden = true;
+      }
+    };
+
+    if (!animate) {
+      apply();
+      return;
+    }
+
+    messageEl.classList.add('is-transitioning');
+    modal.querySelector('.save-success-modal__visual')?.classList.add('is-transitioning');
+
+    setTimeout(() => {
+      apply();
+      messageEl.classList.remove('is-transitioning');
+      modal.querySelector('.save-success-modal__visual')?.classList.remove('is-transitioning');
+    }, 220);
+  },
+
+  closeSaveModal() {
+    const modal = document.getElementById('save-success-modal');
+    if (!modal || modal.hidden) return;
+
+    modal.classList.add('is-leaving');
+    modal.classList.remove('is-visible');
+
+    clearTimeout(this._saveModalLeaveTimer);
+    this._saveModalLeaveTimer = setTimeout(() => {
+      modal.hidden = true;
+      modal.setAttribute('aria-hidden', 'true');
+      modal.classList.remove('is-leaving');
+      modal.dataset.state = 'loading';
+      document.body.classList.remove('modal-open');
+    }, 400);
   },
 
   setType(type) {
